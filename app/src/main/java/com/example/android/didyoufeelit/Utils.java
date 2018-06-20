@@ -143,7 +143,7 @@ public final class Utils {
     private static List<Event> extractFeatureFromJson(String earthquakeJSON) {
         // If the JSON string is empty or null, then return early.
         if (TextUtils.isEmpty(earthquakeJSON)) {
-            return null;
+            return new ArrayList<>();
         }
 
         try {
@@ -166,6 +166,6 @@ public final class Utils {
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
         }
-        return null;
+        return new ArrayList<>();
     }
 }

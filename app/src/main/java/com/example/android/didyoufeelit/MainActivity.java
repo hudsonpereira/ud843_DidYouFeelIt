@@ -20,6 +20,9 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +59,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<List<Event>> loader, List<Event> data) {
-        eventAdapter.setEvents(data);
+        eventAdapter.setEvents(data != null ? data : new ArrayList<Event>());
         eventAdapter.notifyDataSetChanged();
+
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
+
+        TextView emptyTextView = (TextView) findViewById(R.id.empty);
+
+        if (data.size() == 0) {
+
+            emptyTextView.setVisibility(View.VISIBLE);
+        } else {
+            emptyTextView.setVisibility(View.GONE);
+        }
     }
 
     @Override
