@@ -15,61 +15,53 @@
  */
 package com.example.android.didyoufeelit;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Displays the perceived strength of a single earthquake event based on responses from people who
  * felt the earthquake.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Event>> {
 
     /** URL for earthquake data from the USGS dataset */
     private static final String USGS_REQUEST_URL =
             "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=5&limit=10";
+
+    EventAdapter eventAdapter = new EventAdapter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new EarthquakeDataAsyncTask().execute(USGS_REQUEST_URL);
-    }
-
-    /**
-     * Update the UI with the given earthquake information.
-     */
-    private void updateUi(List<Event> earthquakes) {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         if (recyclerView != null) {
-            recyclerView.setAdapter(new EventAdapter(earthquakes));
+            recyclerView.setAdapter(eventAdapter);
         }
 
+        getSupportLoaderManager().initLoader(0, null, this).forceLoad();
     }
 
-    class EarthquakeDataAsyncTask extends AsyncTask<String, Void, List<Event>> {
-        @Override
-        protected List<Event> doInBackground(String... strings) {
+    @Override
+    public Loader<List<Event>> onCreateLoader(int id, Bundle args) {
+        return new EarthquakeLoader(this, USGS_REQUEST_URL);
+    }
 
-            if (strings.length < 1 || strings[0] == null) {
-                return null;
-            }
+    @Override
+    public void onLoadFinished(Loader<List<Event>> loader, List<Event> data) {
+        eventAdapter.setEvents(data);
+        eventAdapter.notifyDataSetChanged();
+    }
 
-            return Utils.fetchEarthquakeData(strings[0]);
-        }
-
-        @Override
-        protected void onPostExecute(List<Event> events) {
-            if (events == null) {
-                return;
-            }
-
-            updateUi(events);
-        }
+    @Override
+    public void onLoaderReset(Loader<List<Event>> loader) {
+        eventAdapter.setEvents(new ArrayList<Event>());
     }
 }

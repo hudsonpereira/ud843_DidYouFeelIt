@@ -1,19 +1,19 @@
 package com.example.android.didyoufeelit;
 
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder>{
 
-    List<Event> events;
+    private List<Event> events = new ArrayList<>();
 
-    public EventAdapter(List<Event> events) {
+    public void setEvents(List<Event> events) {
         this.events = events;
     }
 
@@ -44,7 +44,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         TextView title;
         TextView numberOfPeople;
 
-        public EventViewHolder(View itemView) {
+        EventViewHolder(View itemView) {
             super(itemView);
 
             magnitude = (TextView) itemView.findViewById(R.id.magnitude);
