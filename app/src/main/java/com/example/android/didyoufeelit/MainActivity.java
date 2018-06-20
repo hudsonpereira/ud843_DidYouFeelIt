@@ -18,7 +18,10 @@ package com.example.android.didyoufeelit;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
+
+import java.util.List;
 
 /**
  * Displays the perceived strength of a single earthquake event based on responses from people who
@@ -28,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     /** URL for earthquake data from the USGS dataset */
     private static final String USGS_REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2016-01-01&endtime=2016-05-02&minfelt=50&minmagnitude=5";
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=5&limit=10";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +44,17 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Update the UI with the given earthquake information.
      */
-    private void updateUi(Event earthquake) {
-        TextView titleTextView = (TextView) findViewById(R.id.title);
-        titleTextView.setText(earthquake.title);
+    private void updateUi(List<Event> earthquakes) {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        if (recyclerView != null) {
+            recyclerView.setAdapter(new EventAdapter(earthquakes));
+        }
 
-        TextView tsunamiTextView = (TextView) findViewById(R.id.number_of_people);
-        tsunamiTextView.setText(getString(R.string.num_people_felt_it, earthquake.numOfPeople));
-
-        TextView magnitudeTextView = (TextView) findViewById(R.id.perceived_magnitude);
-        magnitudeTextView.setText(earthquake.perceivedStrength);
     }
 
-    class EarthquakeDataAsyncTask extends AsyncTask<String, Void, Event> {
+    class EarthquakeDataAsyncTask extends AsyncTask<String, Void, List<Event>> {
         @Override
-        protected Event doInBackground(String... strings) {
+        protected List<Event> doInBackground(String... strings) {
 
             if (strings.length < 1 || strings[0] == null) {
                 return null;
@@ -64,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Event event) {
-            if (event == null) {
+        protected void onPostExecute(List<Event> events) {
+            if (events == null) {
                 return;
             }
 
-            updateUi(event);
+            updateUi(events);
         }
     }
 }

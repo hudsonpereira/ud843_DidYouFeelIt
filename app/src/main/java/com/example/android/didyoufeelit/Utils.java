@@ -30,6 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class with methods to help perform the HTTP request and
@@ -43,7 +45,7 @@ public final class Utils {
     /**
      * Query the USGS dataset and return an {@link Event} object to represent a single earthquake.
      */
-    public static Event fetchEarthquakeData(String requestUrl) {
+    public static List<Event> fetchEarthquakeData(String requestUrl) {
         // Create URL object
         URL url = createUrl(requestUrl);
 
@@ -56,10 +58,10 @@ public final class Utils {
         }
 
         // Extract relevant fields from the JSON response and create an {@link Event} object
-        Event earthquake = extractFeatureFromJson(jsonResponse);
+        List<Event> earthquakes = extractFeatureFromJson(jsonResponse);
 
         // Return the {@link Event}
-        return earthquake;
+        return earthquakes;
     }
 
     /**
@@ -138,7 +140,7 @@ public final class Utils {
      * Return an {@link Event} object by parsing out information
      * about the first earthquake from the input earthquakeJSON string.
      */
-    private static Event extractFeatureFromJson(String earthquakeJSON) {
+    private static List<Event> extractFeatureFromJson(String earthquakeJSON) {
         // If the JSON string is empty or null, then return early.
         if (TextUtils.isEmpty(earthquakeJSON)) {
             return null;
@@ -150,17 +152,16 @@ public final class Utils {
 
             // If there are results in the features array
             if (featureArray.length() > 0) {
-                // Extract out the first feature (which is an earthquake)
-                JSONObject firstFeature = featureArray.getJSONObject(0);
-                JSONObject properties = firstFeature.getJSONObject("properties");
+                ArrayList<Event> events = new ArrayList<>();
 
-                // Extract out the title, number of people, and perceived strength values
-                String title = properties.getString("title");
-                String numberOfPeople = properties.getString("felt");
-                String perceivedStrength = properties.getString("cdi");
+                for (int i = 0; i < featureArray.length(); i ++) {
+                    JSONObject feature = featureArray.getJSONObject(i).getJSONObject("properties");
+
+                    events.add(new Event(feature.getString("place"), feature.getString("felt"), feature.getString("cdi")));
+                }
 
                 // Create a new {@link Event} object
-                return new Event(title, numberOfPeople, perceivedStrength);
+                return events;
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
