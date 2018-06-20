@@ -15,6 +15,9 @@
  */
 package com.example.android.didyoufeelit;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -39,17 +42,37 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     EventAdapter eventAdapter = new EventAdapter();
 
+    TextView noInternetTextView;
+
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        noInternetTextView = (TextView) findViewById(R.id.no_internet);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         if (recyclerView != null) {
             recyclerView.setAdapter(eventAdapter);
         }
 
-        getSupportLoaderManager().initLoader(0, null, this).forceLoad();
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+
+
+        if (networkInfo == null || ! networkInfo.isConnected() || (networkInfo.getType() != ConnectivityManager.TYPE_WIFI
+                && networkInfo.getType() != ConnectivityManager.TYPE_MOBILE)) {
+
+            noInternetTextView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
+        } else {
+            noInternetTextView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+            getSupportLoaderManager().initLoader(0, null, this).forceLoad();
+        }
     }
 
     @Override
@@ -62,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         eventAdapter.setEvents(data != null ? data : new ArrayList<Event>());
         eventAdapter.notifyDataSetChanged();
 
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
         TextView emptyTextView = (TextView) findViewById(R.id.empty);
